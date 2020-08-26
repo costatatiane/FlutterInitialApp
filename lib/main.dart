@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:initial_app/addLanguage.dart';
+import 'package:initial_app/language.dart';
 
 void main() {
   runApp(MyApp());
@@ -46,15 +47,19 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   // List<bool> selects = [false, false, false, false, false, false];
   // indêntico ao código de baixo - apenas forma melhor de escrever
-  List<bool> selects = List.generate(6, (index) => false);
-  List<String> labels = [
-    "Android Nativo",
-    "iOS Nativo",
-    "Flutter",
-    "React Native",
-    "PWA",
-    "Ionic"
-  ];
+  // List<bool> selects = List.generate(6, (index) => false);
+  // List<String> labels = [
+  //   "Android Nativo",
+  //   "iOS Nativo",
+  //   "Flutter",
+  //   "React Native",
+  //   "PWA",
+  //   "Ionic"
+  // ];
+
+  List<bool> selects = List();
+  List<String> labels = List();
+  List<Language> languages = List();
 
   @override
   Widget build(BuildContext context) {
@@ -66,18 +71,11 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           Wrap( // ocupa a tela toda independente do tamanho dela
             spacing: 10,
-            children: <Widget>[
-              buildChoiceChip(0),
-              buildChoiceChip(1),
-              buildChoiceChip(2),
-              buildChoiceChip(3),
-              buildChoiceChip(4),
-              buildChoiceChip(5),
-            ],
+            children: buildChoiceItems(),
           ),
           Expanded( // pega o início do item acima até o item abaixo
             child: ListView(
-              children: buildListItens() // chama os 6 elementos abaixo
+              children: buildListItems() // chama os 6 elementos abaixo
             ),
           ),
         ],
@@ -86,12 +84,14 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Icon(Icons.add_circle_outline),
         onPressed: (){
           // pushNamed = função assíncrona
+          // Future semelhante await async do JS
           Future future = Navigator.pushNamed(context, "/add");
           future.then((value) {
-            if (value) {
+            if (value != null) {
               // retornou da tela de adição de linguagem, precisa adicionar item à lista
-              debugPrint(value.name);
-              debugPrint(value.detail);
+              setState(() {
+                languages.add(value);
+              });
             }
           });
         }
@@ -101,72 +101,96 @@ class _MyHomePageState extends State<MyHomePage> {
 
   ChoiceChip buildChoiceChip(int index){
     return ChoiceChip(
-      label: Text(labels[index]),
-      selected: selects[index],
+      label: Text(languages[index].name),
+      selected: languages[index].select,
       onSelected: (value) {
         setState(() {
-          selects[index] = value;
+          languages[index].select = value;
         });
       },
     );
   }
 
-  List<Widget> buildListItens(){
-    return [
-      if (selects[0]) getNativeAndroidOption,
-      if (selects[1]) getNativeiOSOption,
-      if (selects[2]) getFlutterOption,
-      if (selects[3]) getReactNativeOption,
-      if (selects[4]) getPwaOption,
-      if (selects[5]) getIonicOption
-    ];
+  List<Widget> buildChoiceItems() => List.generate(labels.length, (index) => 
+    buildChoiceChip(index)
+  );
+
+  // List<Widget> buildListItens(){
+  //   return [
+  //     if (selects[0]) getNativeAndroidOption,
+  //     if (selects[1]) getNativeiOSOption,
+  //     if (selects[2]) getFlutterOption,
+  //     if (selects[3]) getReactNativeOption,
+  //     if (selects[4]) getPwaOption,
+  //     if (selects[5]) getIonicOption
+  //   ];
+  // }
+
+    List<Widget> buildListItens() {
+    List<Widget> listItens = List();
+    for (Language language in languages){
+      if (language.select) {
+        listItens.add(buildListItem(language));
+      }
+    }
+    return listItens;
   }
 
-  Widget getNativeAndroidOption = Card(
-    child: ListTile(
-      leading: Icon(Icons.android),
-      title: Text('Android Nativo'),
-      subtitle: Text('Linguagens C, Java e Kotlin'),
-    ),
-  );
+  Widget buildListItem(Language language) {
+    return Card(
+      child: ListTile(
+        leading: Icon(Icons.blur_circular),
+        title: Text(language.name),
+        subtitle: Text(language.detail),
+      ),
+    );
+  }
 
-  Widget getIonicOption = Card(
-    child: ListTile(
-      leading: Icon(Icons.blur_circular),
-      title: Text('Ionic'),
-      subtitle: Text('Linguagens JavaScipt e TypeScript'),
-    ),
-  );
+  // Widget getNativeAndroidOption = Card(
+  //   child: ListTile(
+  //     leading: Icon(Icons.android),
+  //     title: Text('Android Nativo'),
+  //     subtitle: Text('Linguagens C, Java e Kotlin'),
+  //   ),
+  // );
 
-  Widget getNativeiOSOption = Card(
-    child: ListTile(
-      leading: SvgPicture.asset("images/apple.svg"),
-      title: Text('iOS Nativo'),
-      subtitle: Text('Linguagens Swift e Objective-C'),
-    ),
-  );
+  // Widget getIonicOption = Card(
+  //   child: ListTile(
+  //     leading: Icon(Icons.blur_circular),
+  //     title: Text('Ionic'),
+  //     subtitle: Text('Linguagens JavaScipt e TypeScript'),
+  //   ),
+  // );
 
-  Widget getFlutterOption = Card(
-    child: ListTile(
-      leading: FlutterLogo(),
-      title: Text('Flutter'),
-      subtitle: Text('Linguagens JavaScipt e TypeScript'),
-    ),
-  );
+  // Widget getNativeiOSOption = Card(
+  //   child: ListTile(
+  //     leading: SvgPicture.asset("images/apple.svg"),
+  //     title: Text('iOS Nativo'),
+  //     subtitle: Text('Linguagens Swift e Objective-C'),
+  //   ),
+  // );
 
-  Widget getReactNativeOption = Card(
-    child: ListTile(
-      leading: SvgPicture.asset("images/react.svg"),
-      title: Text('React Native'),
-      subtitle: Text('Linguagens stack web'),
-    ),
-  );
+  // Widget getFlutterOption = Card(
+  //   child: ListTile(
+  //     leading: FlutterLogo(),
+  //     title: Text('Flutter'),
+  //     subtitle: Text('Linguagens JavaScipt e TypeScript'),
+  //   ),
+  // );
 
-  Widget getPwaOption = Card(
-    child: ListTile(
-      leading: Icon(Icons.blur_circular),
-      title: Text('PWA'),
-      subtitle: Text('Linguagens stack web'),
-    ),
-  );
+  // Widget getReactNativeOption = Card(
+  //   child: ListTile(
+  //     leading: SvgPicture.asset("images/react.svg"),
+  //     title: Text('React Native'),
+  //     subtitle: Text('Linguagens stack web'),
+  //   ),
+  // );
+
+  // Widget getPwaOption = Card(
+  //   child: ListTile(
+  //     leading: Icon(Icons.blur_circular),
+  //     title: Text('PWA'),
+  //     subtitle: Text('Linguagens stack web'),
+  //   ),
+  // );
 }
